@@ -1,13 +1,7 @@
 # Análise dos findings - scan passivo OWASP ZAP
 
-> Este é o scan do TP2. No TP3 os dois findings Medium aceitos aqui foram corrigidos. A análise
-> nova está em `scan_passivo_zap_TP3.md`.
-
-Ferramenta: OWASP ZAP 2.16.1 em modo daemon.
-Scan: passivo, com as 57 regras ativas e sensibilidade máxima.
-Alvo: API local em 127.0.0.1:8000.
-Requisições: 17, incluindo rotas públicas, autenticadas, sem token, acesso indevido e validações.
-Relatórios: relatorio_zap.html e relatorio_zap.json.
+A análise foi realizada com o OWASP ZAP 2.16.1, em modo passivo, com 57 regras ativas e sensibilidade máxima, utilizando 17 requisições à API local.
+Foram identificados 28 alertas, sendo 4 de severidade média, 2 baixa e 22 informativos, sem nenhum alerta alto. Os alertas médios e baixos estavam concentrados nas páginas /docs e /redoc, sem afetar os principais endpoints da API. Os dois alertas médios foram corrigidos no TP3, conforme documentado em scan_passivo_zap_TP3.md.
 
 ## Resultado consolidado
 

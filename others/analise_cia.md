@@ -1,14 +1,10 @@
 # Análise da tríade CIA por componente
 
-Documento que acompanha o DFD (`dfd_api.png`).
+Documento complementar ao DFD (dfd_api.png), que aprofunda a análise de segurança de cada componente com base na tríade Confidencialidade, Integridade e Disponibilidade (CID). Também registra as medidas já implementadas e as pendências identificadas, deixando claras as limitações de segurança do projeto.
 
-Na entrega do TP1 nós discutimos segurança de forma geral, mas não chegamos a aplicar a tríade
-componente por componente - e o professor apontou isso na correção. Refizemos a análise aqui
-percorrendo cada elemento do diagrama e respondendo, para cada um, as três perguntas:
-
-- **Confidencialidade:** o que nesse componente não pode ser visto por quem não deveria?
-- **Integridade:** o que não pode ser alterado sem autorização?
-- **Disponibilidade:** o que precisa continuar funcionando, e o que o derrubaria?
+- Confidencialidade: o que nesse componente não pode ser visto por quem não deveria?
+- Integridade: o que não pode ser alterado sem autorização?
+- Disponibilidade: o que precisa continuar funcionando, e o que o derrubaria?
 
 Cada componente tem também o que já está implementado e o que continua em aberto, porque
 achamos mais honesto registrar as lacunas do que dar a entender que está tudo resolvido.
@@ -17,16 +13,9 @@ achamos mais honesto registrar as lacunas do que dar a entender que está tudo r
 
 ## Visão geral
 
-| #   | Componente                                    | O mais crítico                            |
-| --- | --------------------------------------------- | ----------------------------------------- |
-| C1  | Cliente / Frontend                            | Confidencialidade (o token fica com ele)  |
-| C2  | Middlewares (CORS, cabeçalhos, rate limiting) | Disponibilidade                           |
-| C3  | `GET /health`                                 | Disponibilidade                           |
-| C4  | `POST /auth/token`                            | Confidencialidade                         |
-| C5  | `POST /predict`                               | Integridade                               |
-| C6  | `GET /predictions/{id}`                       | **Confidencialidade**                     |
-| C7  | `database.db`                                 | Confidencialidade e Integridade           |
-| C8  | `JWT_SECRET_KEY`                              | **Confidencialidade** (é a chave de tudo) |
+Cada componente da API possui um ponto de atenção principal em relação à segurança. No cliente/frontend, o cuidado maior é com a proteção do token de acesso. Nos middlewares e na rota GET /health, a prioridade é garantir que o sistema continue funcionando corretamente.
+Na rota POST /auth/token, é essencial proteger as credenciais e os tokens. Já na rota POST /predict, o foco está em garantir que os dados enviados não sejam alterados indevidamente. Na rota GET /predictions/{id}, a principal preocupação é impedir que pessoas não autorizadas acessem previsões de outros usuários.
+O arquivo database.db precisa ter seus dados protegidos contra acessos e alterações indevidas. Por fim, a variável JWT_SECRET_KEY exige atenção especial, pois sua exposição pode comprometer a segurança dos tokens e, consequentemente, de toda a API.
 
 ---
 
@@ -34,192 +23,70 @@ achamos mais honesto registrar as lacunas do que dar a entender que está tudo r
 
 _Entidade externa, fora da fronteira de confiança. Não controlamos este componente._
 
-**Confidencialidade.** O que precisa ser protegido aqui é o token JWT, que fica guardado no
-lado do cliente depois do login. Quem tiver o token age como o usuário até ele expirar. Também
-circulam por aqui as credenciais, no momento do login, e o conteúdo das predições do usuário.
-
-**Integridade.** A requisição pode ser adulterada no caminho, e o próprio cliente pode mandar
-qualquer coisa - é por isso que tudo que vem daqui é tratado como dado não confiável.
-
-**Disponibilidade.** Do nosso lado, nada a garantir: se o cliente cair, é problema dele.
-
-| Já implementado                                                                        | Em aberto                                                                              |
-| -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| Token com expiração de 30 minutos, o que limita a janela de uso de um token roubado    | O armazenamento do token no cliente é responsabilidade de quem construir o frontend    |
-| CORS com allowlist fecha a porta para outro site chamar a API pelo navegador da vítima | Sem HTTPS local, as credenciais trafegam em texto claro no ambiente de desenvolvimento |
+O cliente está fora da nossa fronteira de confiança, por isso não podemos confiar totalmente nos dados que ele envia. A principal preocupação é proteger o token JWT, as credenciais e os dados das predições.
+Já implementado: token com expiração de 30 minutos e CORS com origens permitidas.
+Em aberto: armazenamento seguro do token no frontend e configuração de HTTPS no ambiente local para proteger as credenciais durante a transmissão.
 
 ---
 
 ## C2 - Middlewares (CORS, cabeçalhos de segurança, rate limiting)
 
-**Confidencialidade.** É a camada que impede um site de terceiro de ler respostas autenticadas da
-nossa API. A allowlist de CORS é fechada justamente por isso: com `allow_credentials=True`, um
-curinga permitiria que qualquer página lesse dados de um usuário logado.
-
-**Integridade.** Os cabeçalhos protegem a integridade da sessão do usuário no navegador:
-`X-Frame-Options: DENY` impede clickjacking, e o `X-Content-Type-Options: nosniff` impede que uma
-resposta JSON seja reinterpretada como HTML e executada.
-
-**Disponibilidade.** É aqui que ela é defendida de fato. O rate limiting no login evita que
-alguém derrube a API martelando `/auth/token` - e isso importa mais do que parece, porque cada
-tentativa de login roda um bcrypt, que é lento de propósito. Sem limite, algumas centenas de
-requisições simultâneas consomem todo o processador.
-
-| Já implementado                                                                    | Em aberto                                                                                   |
-| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| CORS com lista fechada de origens                                                  | Contador do rate limiting fica em memória; com várias réplicas, o limite efetivo multiplica |
-| HSTS, X-Frame-Options, X-Content-Type-Options, CSP, Referrer-Policy, Cache-Control | Contagem por IP não segura uma botnet - faltaria um limite por conta                        |
-| Rate limiting de 10/min no `/auth/token` e resposta 429 genérica                   | Sem CAPTCHA progressivo após falhas repetidas                                               |
+Os middlewares ajudam a proteger a API contra acessos indevidos e ataques. O CORS restringe as origens que podem acessar a API pelo navegador, os cabeçalhos de segurança reduzem riscos como clickjacking e interpretação incorreta de conteúdo, e o rate limiting limita tentativas excessivas de login, ajudando a evitar sobrecarga do servidor.
+Já implementado: CORS com origens permitidas, cabeçalhos de segurança e limite de 10 tentativas por minuto no login, com resposta genérica de erro 429.
+Em aberto: o contador do rate limiting fica em memória, o limite por IP não impede ataques distribuídos e ainda falta implementar CAPTCHA após falhas repetidas. |
 
 ---
 
 ## C3 - `GET /health`
 
-**Confidencialidade.** É uma rota pública, então quase nada. O cuidado que tomamos foi **não
-devolver informação demais**: a resposta traz só `status` e `service`. Versão da aplicação, estado
-do banco ou nome do ambiente ajudariam quem está fazendo reconhecimento da API.
-
-**Integridade.** Baixa criticidade - a rota não altera nada, só lê um valor fixo.
-
-**Disponibilidade.** É o componente mais crítico da tríade neste caso: o health check é o que
-o monitoramento consulta para saber se o serviço está de pé. Se ele cair ou mentir, ninguém
-descobre que a API parou.
-
-| Já implementado                                     | Em aberto                                                                                          |
-| --------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| Resposta enxuta, sem versão nem detalhe de ambiente | O health check não verifica se o banco está acessível - a API pode responder "ok" com o banco fora |
-| Coberta pelo rate limiting global                   | -                                                                                                  |
+Essa rota é pública e serve para verificar se a API está funcionando. Para evitar expor informações desnecessárias, ela retorna apenas o status e o nome do serviço. Como não altera dados, o risco à integridade é baixo, mas sua disponibilidade é importante para o monitoramento do sistema.
+Já implementado: resposta simples, sem informações sobre versão ou ambiente, e proteção pelo rate limiting global.
+Em aberto: verificar também se o banco de dados está acessível, pois atualmente a API pode responder que está funcionando mesmo com o banco indisponível.
 
 ---
 
 ## C4 - `POST /auth/token`
 
-**Confidencialidade.** A senha do usuário passa por aqui, e o token sai por aqui. Além disso, há
-um vazamento mais sutil a evitar: a própria existência de um usuário. Se a resposta para
-"usuário não existe" fosse diferente da de "senha errada", daria para descobrir quais contas
-existem testando uma lista de nomes.
-
-**Integridade.** O token precisa ser inforjável. Se alguém conseguir montar um JWT que a API
-aceite, toda a autenticação cai junto.
-
-**Disponibilidade.** É o alvo preferido de força bruta e de negação de serviço por consumo de CPU,
-pelo custo do bcrypt.
-
-| Já implementado                                                                                                                    | Em aberto                                                                |
-| ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| Senhas guardadas só como hash bcrypt, com salt por senha                                                                           | Sem HTTPS local, a senha trafega em claro no ambiente de desenvolvimento |
-| Mesma resposta 401 para usuário inexistente e senha errada                                                                         | Sem bloqueio temporário de conta após N falhas                           |
-| Verificação bcrypt contra hash falso quando o usuário não existe, para igualar o tempo de resposta e impedir enumeração por timing | Sem registro estruturado de tentativas de login para auditoria           |
-| JWT assinado em HS256 com algoritmo fixado na decodificação, o que bloqueia o ataque de `alg: none`                                | Sem refresh token nem revogação: um token roubado vale até expirar       |
-| Rate limiting de 10 requisições por minuto                                                                                         |                                                                          |
+Essa rota é responsável por autenticar o usuário e gerar o token JWT. A principal preocupação é proteger as senhas e os tokens, evitar que pessoas descubram quais usuários estão cadastrados e impedir a falsificação de tokens. Também é importante prevenir ataques de força bruta e sobrecarga do servidor.
+Já implementado: senhas protegidas com hash bcrypt, respostas iguais para usuário inexistente e senha incorreta, JWT assinado com HS256 e limite de 10 requisições por minuto.
+Em aberto: configurar HTTPS no ambiente local, implementar bloqueio temporário de contas, registrar tentativas de login para auditoria e adicionar mecanismos de renovação e revogação de tokens.
 
 ---
 
 ## C5 - `POST /predict`
 
-**Confidencialidade.** O texto que o cliente manda pode conter dado pessoal ou informação sobre a
-conta dele. A predição gerada fica gravada e só pode ser lida pelo dono.
-
-**Integridade.** É o ponto mais importante desta rota. Duas coisas precisam ser garantidas:
-
-1. **A entrada não pode trazer campo que não pedimos.** É o que o `extra='forbid'` resolve - sem
-   ele, o Pydantic descartaria campos desconhecidos em silêncio, e uma tentativa de enviar
-   `owner_id` no corpo passaria despercebida nos logs.
-2. **O dono da predição é decidido pelo servidor.** O `owner_id` vem sempre do token, nunca do
-   corpo da requisição. O schema de entrada nem declara esse campo.
-
-**Disponibilidade.** Cada chamada faz uma escrita no banco. Num volume alto, o SQLite vira
-gargalo, porque serializa as escritas.
-
-| Já implementado                                   | Em aberto                                                            |
-| ------------------------------------------------- | -------------------------------------------------------------------- |
-| `extra='forbid'`: campo não declarado devolve 422 | Sem limite de quantas predições um usuário pode criar                |
-| `owner_id` derivado do token, nunca do corpo      | SQLite não aguenta escrita concorrente em volume                     |
-| Tamanho do texto limitado a 5000 caracteres       | O texto é gravado como veio; não há sanitização para exibição futura |
-| Rota exige JWT válido                             |                                                                      |
+Essa rota recebe o texto do usuário, gera uma predição e armazena o resultado no banco de dados. É importante proteger possíveis dados pessoais e garantir que cada predição fique vinculada ao usuário correto.
+Já implementado: validação dos dados com extra='forbid', limite de 5.000 caracteres, autenticação por JWT e definição do owner_id pelo token, impedindo que o usuário escolha o proprietário da predição pelo corpo da requisição.
+Em aberto: limitar a quantidade de predições por usuário, avaliar uma alternativa ao SQLite para suportar mais escritas simultâneas e sanitizar o texto antes de exibi-lo futuramente.
 
 ---
 
 ## C6 - `GET /predictions/{id}`
 
-**Confidencialidade.** É o componente onde a confidencialidade mais pesa em todo o sistema. É
-aqui que mora o risco de BOLA: se a rota devolver a predição sem conferir de quem ela é, qualquer
-usuário autenticado lê o conteúdo de qualquer outro só trocando o número na URL.
-
-Há ainda um segundo vazamento, mais discreto: mesmo negando o acesso, responder 403 já
-confirmaria que aquele ID existe. Com isso dá para mapear a base inteira por tentativa e erro. Por
-isso escolhemos responder 404 tanto para "não existe" quanto para "não é sua" - de fora, as
-duas situações ficam idênticas.
-
-**Integridade.** A rota só lê, então o risco é indireto: ela não pode devolver dado de outro
-usuário como se fosse do solicitante.
-
-**Disponibilidade.** Consulta simples e indexada por `owner_id`; não é um ponto de pressão.
-
-| Já implementado                                                                  | Em aberto                                                                        |
-| -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| Comparação `owner_id == usuário autenticado` antes de devolver qualquer coisa    | Sem log de tentativas de acesso negado, que seria o sinal de alguém varrendo IDs |
-| 404 em vez de 403, para não confirmar a existência do recurso                    | IDs são sequenciais e previsíveis; UUID dificultaria a varredura                 |
-| Na listagem, o filtro por dono vai dentro da consulta SQL, não depois em memória |                                                                                  |
-| Coberto por teste automatizado (`test_usuario_nao_acessa_predicao_de_outro`)     |                                                                                  |
+Essa rota permite consultar uma predição específica e exige atenção especial à confidencialidade, pois cada usuário só pode acessar seus próprios dados. Sem essa verificação, alguém poderia consultar predições de outras pessoas alterando o ID na URL.
+Já implementado: verificação de propriedade pelo owner_id, resposta 404 tanto para registros inexistentes quanto para registros de outros usuários, filtro por proprietário diretamente na consulta SQL e teste automatizado de acesso indevido.
+Em aberto: registrar tentativas de acesso negado para identificar possíveis ataques e substituir os IDs sequenciais por UUIDs, dificultando a tentativa de descobrir outros registros.
 
 ---
 
 ## C7 - `database.db` (SQLite)
 
-**Confidencialidade.** Guarda os hashes de senha e todas as predições dos usuários. É o
-componente que concentra mais dado sensível. Nenhuma requisição chega até ele diretamente: todo
-acesso passa por um processo dentro da fronteira de confiança.
-
-**Integridade.** É crítica em dois níveis: o dado não pode ser alterado por quem não deveria
-(daí o cuidado com SQL injection), e a relação entre predição e dono precisa se manter coerente,
-senão o controle de ownership perde o sentido.
-
-**Disponibilidade.** Se o arquivo corromper ou sumir, a aplicação para inteira. É um ponto único
-de falha.
-
-| Já implementado                                                                                                      | Em aberto                                                |
-| -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| Todas as consultas da API passam pelo SQLModel, com valores como parâmetro - não existe SQL montado por concatenação | O arquivo não é criptografado em repouso                 |
-| Senhas só em hash bcrypt, nunca em texto                                                                             | Sem rotina de backup                                     |
-| `hashed_password` nunca aparece em resposta: as rotas devolvem só os modelos de saída, que não têm esse campo        | SQLite é ponto único de falha e não escala para produção |
-| Chave estrangeira `owner_id` referenciando `user.id`                                                                 | Sem auditoria de quem alterou o quê                      |
+O banco de dados armazena informações importantes, como hashes de senhas e predições dos usuários. Por isso, é essencial proteger os dados contra acessos e alterações indevidas. Além disso, se o arquivo for corrompido ou perdido, toda a aplicação poderá ser afetada.
+Já implementado: consultas parametrizadas com SQLModel para prevenir SQL injection, senhas armazenadas com hash bcrypt, proteção contra exposição de hashes nas respostas e chave estrangeira para relacionar as predições aos usuários.
+Em aberto: criptografar o banco em repouso, implementar backups regulares, avaliar uma solução mais robusta para produção e adicionar auditoria das alterações realizadas nos dados.
 
 ---
 
 ## C8 - `JWT_SECRET_KEY`
 
-**Confidencialidade.** É o segredo mais crítico do sistema inteiro. Quem tiver essa chave
-consegue assinar um token válido para qualquer usuário - e aí não adianta nada o resto dos
-controles: o atacante entra pela porta da frente, autenticado.
-
-**Integridade.** A chave não pode ser trocada por um valor conhecido pelo atacante. Se isso
-acontecer, ele passa a conseguir forjar tokens.
-
-**Disponibilidade.** Se a chave se perder, todos os tokens em circulação viram inválidos de uma
-vez e todo mundo precisa logar de novo.
-
-| Já implementado                                                                                            | Em aberto                                                                                                             |
-| ---------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Lida de variável de ambiente, podendo ser trocada sem mexer no código                                      | O valor padrão está no `config.py` para facilitar o desenvolvimento - em produção precisa vir de um cofre de segredos |
-| Algoritmo fixado na decodificação (`algorithms=["HS256"]`), o que impede o ataque de confusão de algoritmo | Sem rotação periódica da chave                                                                                        |
-| A chave nunca sai em nenhuma resposta da API                                                               |                                                                                                                       |
+Essa chave é essencial para a segurança da API, pois é usada para assinar os tokens JWT. Se alguém obtiver seu valor, poderá criar tokens falsos e se passar por outros usuários. Se a chave for perdida ou alterada, os tokens existentes deixarão de ser válidos.
+Já implementado: chave configurada por variável de ambiente, algoritmo de assinatura fixado em HS256 e proteção contra exposição da chave nas respostas da API.
+Em aberto: remover o valor padrão do config.py em produção, armazenar a chave em um cofre de segredos e implementar a rotação periódica para aumentar a segurança.
 
 ---
 
 ## Onde cada pilar está mais e menos protegido
 
-**Confidencialidade** - é o pilar mais bem coberto. Senha só em hash, `hashed_password` nunca
-serializado, ownership verificado nas rotas por ID, 404 em vez de 403 para não confirmar
-existência de recurso, CORS fechado e mensagens de erro que não distinguem usuário inexistente de
-senha errada. A lacuna principal é o HTTPS: enquanto a API roda em HTTP no ambiente local,
-tudo trafega em claro, e o HSTS que enviamos só passa a ter efeito quando houver TLS na frente.
-
-**Integridade** - bem coberta na entrada, fraca na auditoria. A validação do Pydantic com
-`extra='forbid'`, o `owner_id` vindo do token e as consultas parametrizadas cobrem bem o que entra
-no sistema. O que falta é o outro lado: não temos registro de quem fez o quê. Se algo for
-alterado indevidamente, não há trilha para investigar.
-
-**Disponibilidade** - é o pilar mais fraco dos três. O rate limiting no login ajuda, mas o SQLite
-é ponto único de falha, não há backup, o health check não verifica o banco e não existe
-monitoramento de nada. É o que priorizaríamos se o sistema fosse para produção de verdade.
+Confidencialidade: é o pilar mais bem protegido, com senhas criptograficamente protegidas por hash, controle de acesso às predições, consultas seguras e mensagens de erro genéricas. A principal lacuna é a falta de HTTPS no ambiente local, que deixa os dados expostos durante a transmissão.
+Integridade: está bem protegida por validações de entrada, identificação do proprietário pelo token e consultas parametrizadas. Porém, falta uma auditoria para registrar alterações e permitir investigar possíveis ações indevidas.
+Disponibilidade: é o ponto mais fraco, pois, apesar do limite de tentativas de login, o sistema ainda depende do SQLite, não possui rotina de backup, não verifica a disponibilidade do banco no health check e não conta com monitoramento adequado. Essas seriam as principais prioridades antes de colocar a aplicação em produção.

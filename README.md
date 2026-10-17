@@ -93,7 +93,7 @@ esses dados. A discussão completa está na seção 1.8 do notebook.
 
 ## Instalação
 
-Pré-requisito: Python 3.12 (`python3 --version`), a mesma versão usada no GitHub Actions.
+Pré-requisito: Python 3.12 (`python --version`), a mesma versão usada no GitHub Actions.
 
 ```bash
 # 1. Clonar o repositório
@@ -285,12 +285,12 @@ Limitações: o contador é mantido em memória, não funcionando de forma centr
 
 No TP3 fizemos a auditoria final com o OWASP ZAP 2.16.1, em scan passivo, usando 57 regras em sensibilidade máxima.
 
-| Severidade | Antes das correções: alertas (ocorrências) | Scan final: alertas (ocorrências) |
-|---|---|---|
-| High | 0 | 0 |
-| Medium | 2 (4) | 0 |
-| Low | 1 (2) | 1 (1) |
-| Informational | 6 (31) | 5 (29) |
+| Severidade    | Antes das correções: alertas (ocorrências) | Scan final: alertas (ocorrências) |
+| ------------- | ------------------------------------------ | --------------------------------- |
+| High          | 0                                          | 0                                 |
+| Medium        | 2 (4)                                      | 0                                 |
+| Low           | 1 (2)                                      | 1 (1)                             |
+| Informational | 6 (31)                                     | 5 (29)                            |
 
 Os dois findings Medium (CSP com 'unsafe-inline' em script-src e style-src, no /docs e no /redoc) foram corrigidos. A análise de cada um, com o risco, a correção e a evidência, está em zap/scan_passivo_zap_TP3.md, e o relatório final em zap/relatorio_zap_tp3.html.
 
