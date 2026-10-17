@@ -7,6 +7,7 @@ from sqlmodel import Session, select
 from config import LIMITE_DO_LOGIN
 from database import pegar_sessao
 from models.auth import TokenResponse
+from models.erro import ErroDeValidacaoResponse, ErroResponse
 from models.user import User
 from security.jwt_handler import criar_token
 from security.password import gerar_hash_de_senha, senha_confere
@@ -39,20 +40,31 @@ def autenticar(sessao: Session, username: str, senha: str) -> User | None:
     "/token",
     response_model=TokenResponse,
     summary="Autentica o usuário e devolve um token JWT",
+    description=(
+        "Rota pública. Recebe `username` e `password` como formulário "
+        "(`application/x-www-form-urlencoded`) e devolve um token JWT válido por "
+        "30 minutos, que deve ser enviado nas outras rotas no cabeçalho "
+        "`Authorization: Bearer <token>`. Limite de 10 tentativas por minuto por IP."
+    ),
     responses={
         200: {"description": "Login aceito. Devolve access_token e token_type."},
         401: {
+            "model": ErroResponse,
             "description": (
                 "Usuário ou senha inválidos. A resposta é a mesma para usuário "
                 "inexistente e senha errada, para não revelar quais usuários existem."
-            )
+            ),
         },
-        422: {"description": "Formulário incompleto (faltou username ou password)."},
+        422: {
+            "model": ErroDeValidacaoResponse,
+            "description": "Formulário incompleto (faltou username ou password).",
+        },
         429: {
+            "model": ErroResponse,
             "description": (
                 "Limite de 10 requisições por minuto excedido. "
                 "Veja o cabeçalho Retry-After."
-            )
+            ),
         },
     },
 )

@@ -42,18 +42,3 @@ CSP_DA_API = (
     "base-uri 'none'; "
     "form-action 'none'"
 )
-
-CSP_DA_DOCUMENTACAO = (
-    "default-src 'none'; "
-    "script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; "
-    "style-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; "
-    "img-src 'self' https://fastapi.tiangolo.com data:; "
-    "font-src 'self' https://cdn.jsdelivr.net; "
-    "connect-src 'self'; "
-    "frame-ancestors 'none'; "
-    "base-uri 'self'; "
-    "form-action 'self'"
-)
-
-
-ROTAS_DA_DOCUMENTACAO = ("/docs", "/redoc")

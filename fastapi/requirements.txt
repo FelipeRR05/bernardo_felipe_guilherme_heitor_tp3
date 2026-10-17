@@ -1,4 +1,4 @@
-# Dependências da API - Projeto de Bloco, TP2
+# Dependências da API - Projeto de Bloco, TP3
 # Instalação:  pip install -r requirements.txt
 
 # API

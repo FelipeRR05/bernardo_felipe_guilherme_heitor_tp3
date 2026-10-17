@@ -1,0 +1,402 @@
+{
+	"@programName": "ZAP",
+	"@version": "2.16.1",
+	"@generated": "Fri, 16 Oct 2026 23:11:46",
+	"site":[ 
+		{
+			"@name": "http://127.0.0.1:8000",
+			"@host": "127.0.0.1",
+			"@port": "8000",
+			"@ssl": "false",
+			"alerts": [ 
+				{
+					"pluginid": "10017",
+					"alertRef": "10017",
+					"alert": "Cross-Domain JavaScript Source File Inclusion",
+					"name": "Cross-Domain JavaScript Source File Inclusion",
+					"riskcode": "1",
+					"confidence": "2",
+					"riskdesc": "Low (Medium)",
+					"desc": "<p>The page includes one or more script files from a third-party domain.</p>",
+					"instances":[ 
+						{
+							"id": "2",
+							"uri": "http://127.0.0.1:8000/docs",
+							"method": "GET",
+							"param": "https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js",
+							"attack": "",
+							"evidence": "<script src=\"https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js\"></script>",
+							"otherinfo": ""
+						}
+					],
+					"count": "1",
+					"solution": "<p>Ensure JavaScript source files are loaded from only trusted sources, and the sources can't be controlled by end users of the application.</p>",
+					"otherinfo": "",
+					"reference": "",
+					"cweid": "829",
+					"wascid": "15",
+					"sourceid": "3"
+				},
+				{
+					"pluginid": "10111",
+					"alertRef": "10111",
+					"alert": "Authentication Request Identified",
+					"name": "Authentication Request Identified",
+					"riskcode": "0",
+					"confidence": "1",
+					"riskdesc": "Informational (Low)",
+					"desc": "<p>The given request has been identified as an authentication request. The 'Other Info' field contains a set of key=value lines which identify any relevant fields. If the request is in a context which has an Authentication Method set to \"Auto-Detect\" then this rule will change the authentication to match the request identified.</p>",
+					"instances":[ 
+						{
+							"id": "12",
+							"uri": "http://127.0.0.1:8000/auth/token",
+							"method": "POST",
+							"param": "username",
+							"attack": "",
+							"evidence": "password",
+							"otherinfo": "userParam=username\nuserValue=admin\npasswordParam=password"
+						},
+						{
+							"id": "18",
+							"uri": "http://127.0.0.1:8000/auth/token",
+							"method": "POST",
+							"param": "username",
+							"attack": "",
+							"evidence": "password",
+							"otherinfo": "userParam=username\nuserValue=analista\npasswordParam=password"
+						}
+					],
+					"count": "2",
+					"solution": "<p>This is an informational alert rather than a vulnerability and so there is nothing to fix.</p>",
+					"otherinfo": "<p>userParam=username</p><p>userValue=admin</p><p>passwordParam=password</p>",
+					"reference": "<p>https://www.zaproxy.org/docs/desktop/addons/authentication-helper/auth-req-id/</p>",
+					"cweid": "-1",
+					"wascid": "-1",
+					"sourceid": "6"
+				},
+				{
+					"pluginid": "10109",
+					"alertRef": "10109",
+					"alert": "Modern Web Application",
+					"name": "Modern Web Application",
+					"riskcode": "0",
+					"confidence": "2",
+					"riskdesc": "Informational (Medium)",
+					"desc": "<p>The application appears to be a modern web application. If you need to explore it automatically then the Ajax Spider may well be more effective than the standard one.</p>",
+					"instances":[ 
+						{
+							"id": "3",
+							"uri": "http://127.0.0.1:8000/docs",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "<script src=\"https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js\"></script>",
+							"otherinfo": "No links have been found while there are scripts, which is an indication that this is a modern web application."
+						}
+					],
+					"count": "1",
+					"solution": "<p>This is an informational alert and so no changes are required.</p>",
+					"otherinfo": "<p>No links have been found while there are scripts, which is an indication that this is a modern web application.</p>",
+					"reference": "",
+					"cweid": "-1",
+					"wascid": "-1",
+					"sourceid": "3"
+				},
+				{
+					"pluginid": "10036",
+					"alertRef": "10036",
+					"alert": "Server Leaks its Webserver Application via \"Server\" HTTP Response Header Field",
+					"name": "Server Leaks its Webserver Application via \"Server\" HTTP Response Header Field",
+					"riskcode": "0",
+					"confidence": "3",
+					"riskdesc": "Informational (High)",
+					"desc": "<p>The web/application server is leaking the application it uses as a webserver via the \"Server\" HTTP response header. Access to such information may facilitate attackers identifying other vulnerabilities your web/application server is subject to. This information alone, i.e. without a version string, is not very dangerous for the security of a server, nevertheless this information in the response header field is almost always useless and thus just an obsolete attacking vector.</p>",
+					"instances":[ 
+						{
+							"id": "4",
+							"uri": "http://127.0.0.1:8000/docs",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "uvicorn",
+							"otherinfo": ""
+						},
+						{
+							"id": "0",
+							"uri": "http://127.0.0.1:8000/health",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "uvicorn",
+							"otherinfo": ""
+						},
+						{
+							"id": "8",
+							"uri": "http://127.0.0.1:8000/openapi.json",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "uvicorn",
+							"otherinfo": ""
+						},
+						{
+							"id": "19",
+							"uri": "http://127.0.0.1:8000/predictions/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "uvicorn",
+							"otherinfo": ""
+						},
+						{
+							"id": "22",
+							"uri": "http://127.0.0.1:8000/predictions/1",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "uvicorn",
+							"otherinfo": ""
+						},
+						{
+							"id": "27",
+							"uri": "http://127.0.0.1:8000/predictions/3",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "uvicorn",
+							"otherinfo": ""
+						},
+						{
+							"id": "29",
+							"uri": "http://127.0.0.1:8000/predictions/999",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "uvicorn",
+							"otherinfo": ""
+						},
+						{
+							"id": "39",
+							"uri": "http://127.0.0.1:8000/predictions/abc",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "uvicorn",
+							"otherinfo": ""
+						},
+						{
+							"id": "6",
+							"uri": "http://127.0.0.1:8000/redoc",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "uvicorn",
+							"otherinfo": ""
+						},
+						{
+							"id": "44",
+							"uri": "http://127.0.0.1:8000/rota-que-nao-existe",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "uvicorn",
+							"otherinfo": ""
+						},
+						{
+							"id": "10",
+							"uri": "http://127.0.0.1:8000/auth/token",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "uvicorn",
+							"otherinfo": ""
+						},
+						{
+							"id": "33",
+							"uri": "http://127.0.0.1:8000/predict",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "uvicorn",
+							"otherinfo": ""
+						}
+					],
+					"count": "12",
+					"solution": "<p>Ensure that your web server, application server, load balancer, etc. is configured to suppress the \"Server\" header or provide generic details.</p>",
+					"otherinfo": "",
+					"reference": "<p>https://httpd.apache.org/docs/current/mod/core.html#servertokens</p><p>https://learn.microsoft.com/en-us/previous-versions/msp-n-p/ff648552(v=pandp.10)</p><p>https://www.troyhunt.com/shhh-dont-let-your-response-headers/</p>",
+					"cweid": "497",
+					"wascid": "13",
+					"sourceid": "3"
+				},
+				{
+					"pluginid": "10112",
+					"alertRef": "10112",
+					"alert": "Session Management Response Identified",
+					"name": "Session Management Response Identified",
+					"riskcode": "0",
+					"confidence": "3",
+					"riskdesc": "Informational (High)",
+					"desc": "<p>The given response has been identified as containing a session management token. The 'Other Info' field contains a set of header tokens that can be used in the Header Based Session Management Method. If the request is in a context which has a Session Management Method set to \"Auto-Detect\" then this rule will change the session management to use the tokens identified.</p>",
+					"instances":[ 
+						{
+							"id": "25",
+							"uri": "http://127.0.0.1:8000/auth/token",
+							"method": "GET",
+							"param": "access_token",
+							"attack": "",
+							"evidence": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwidXNlcm5hbWUiOiJhZG1pbiIsImlhdCI6MTc5MjE5MjMwMywiZXhwIjoxNzkyMTk0MTAzfQ.OgcyUhmvt4ZEgdc2iEa09I8paXHvAUKP7L0qJhYNo84",
+							"otherinfo": "\njson:access_token"
+						},
+						{
+							"id": "35",
+							"uri": "http://127.0.0.1:8000/auth/token",
+							"method": "POST",
+							"param": "access_token",
+							"attack": "",
+							"evidence": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwidXNlcm5hbWUiOiJhZG1pbiIsImlhdCI6MTc5MjE5MjMwMywiZXhwIjoxNzkyMTk0MTAzfQ.OgcyUhmvt4ZEgdc2iEa09I8paXHvAUKP7L0qJhYNo84",
+							"otherinfo": "\njson:access_token"
+						}
+					],
+					"count": "2",
+					"solution": "<p>This is an informational alert rather than a vulnerability and so there is nothing to fix.</p>",
+					"otherinfo": "<p></p><p>json:access_token</p>",
+					"reference": "<p>https://www.zaproxy.org/docs/desktop/addons/authentication-helper/session-mgmt-id</p>",
+					"cweid": "-1",
+					"wascid": "-1",
+					"sourceid": "12"
+				},
+				{
+					"pluginid": "10035",
+					"alertRef": "10035-4",
+					"alert": "Strict-Transport-Security Header on Plain HTTP Response",
+					"name": "Strict-Transport-Security Header on Plain HTTP Response",
+					"riskcode": "0",
+					"confidence": "3",
+					"riskdesc": "Informational (High)",
+					"desc": "<p>A HTTP Strict Transport Security (HSTS) header was found, but HSTS headers are ignored on plain (non-HTTPS) responses.</p><p>HTTP Strict Transport Security (HSTS) is a web security policy mechanism whereby a web server declares that complying user agents (such as a web browser) are to interact with it using only secure HTTPS connections (i.e. HTTP layered over TLS/SSL).</p>",
+					"instances":[ 
+						{
+							"id": "5",
+							"uri": "http://127.0.0.1:8000/docs",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "max-age=63072000; includeSubDomains; preload",
+							"otherinfo": ""
+						},
+						{
+							"id": "1",
+							"uri": "http://127.0.0.1:8000/health",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "max-age=63072000; includeSubDomains; preload",
+							"otherinfo": ""
+						},
+						{
+							"id": "9",
+							"uri": "http://127.0.0.1:8000/openapi.json",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "max-age=63072000; includeSubDomains; preload",
+							"otherinfo": ""
+						},
+						{
+							"id": "20",
+							"uri": "http://127.0.0.1:8000/predictions/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "max-age=63072000; includeSubDomains; preload",
+							"otherinfo": ""
+						},
+						{
+							"id": "23",
+							"uri": "http://127.0.0.1:8000/predictions/1",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "max-age=63072000; includeSubDomains; preload",
+							"otherinfo": ""
+						},
+						{
+							"id": "28",
+							"uri": "http://127.0.0.1:8000/predictions/3",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "max-age=63072000; includeSubDomains; preload",
+							"otherinfo": ""
+						},
+						{
+							"id": "30",
+							"uri": "http://127.0.0.1:8000/predictions/999",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "max-age=63072000; includeSubDomains; preload",
+							"otherinfo": ""
+						},
+						{
+							"id": "42",
+							"uri": "http://127.0.0.1:8000/predictions/abc",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "max-age=63072000; includeSubDomains; preload",
+							"otherinfo": ""
+						},
+						{
+							"id": "7",
+							"uri": "http://127.0.0.1:8000/redoc",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "max-age=63072000; includeSubDomains; preload",
+							"otherinfo": ""
+						},
+						{
+							"id": "45",
+							"uri": "http://127.0.0.1:8000/rota-que-nao-existe",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "max-age=63072000; includeSubDomains; preload",
+							"otherinfo": ""
+						},
+						{
+							"id": "11",
+							"uri": "http://127.0.0.1:8000/auth/token",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "max-age=63072000; includeSubDomains; preload",
+							"otherinfo": ""
+						},
+						{
+							"id": "34",
+							"uri": "http://127.0.0.1:8000/predict",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "max-age=63072000; includeSubDomains; preload",
+							"otherinfo": ""
+						}
+					],
+					"count": "12",
+					"solution": "<p>Review the configuration of this control. Ensure that your web server, application server, load balancer, etc. is configured to set Strict-Transport-Security for HTTPS responses.</p>",
+					"otherinfo": "",
+					"reference": "<p>https://datatracker.ietf.org/doc/html/rfc6797#section-8.1</p>",
+					"cweid": "319",
+					"wascid": "15",
+					"sourceid": "3"
+				}
+			]
+		}
+	],
+	"sequences":[
+	]
+
+}

@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, status
 from sqlmodel import Session
 
 from database import pegar_sessao
+from models.erro import ErroDeValidacaoResponse, ErroResponse
 from models.prediction import Prediction, PredictionRequest, PredictionResponse
 from models.user import User
 from security.oauth2 import usuario_autenticado
@@ -18,14 +19,21 @@ INTENCAO_SIMULADA = "Technical issue"
     response_model=PredictionResponse,
     status_code=status.HTTP_200_OK,
     summary="Classifica a intenção de um texto (resposta simulada)",
+    description=(
+        "Exige token JWT. Recebe o texto do chamado em JSON, devolve a intenção e "
+        "salva a predição como pertencente ao usuário do token. O dono vem sempre do "
+        "token, nunca do corpo. Por enquanto a intenção é simulada: o modelo de "
+        "classificação entra no Trimestre 2."
+    ),
     responses={
         200: {"description": "Predição gerada e salva como pertencente ao usuário."},
-        401: {"description": "Token ausente, inválido ou expirado."},
+        401: {"model": ErroResponse, "description": "Token ausente, inválido ou expirado."},
         422: {
+            "model": ErroDeValidacaoResponse,
             "description": (
                 "Corpo inválido: texto vazio, acima de 5000 caracteres, ou com "
                 "algum campo extra que não faz parte do modelo (extra='forbid')."
-            )
+            ),
         },
     },
 )

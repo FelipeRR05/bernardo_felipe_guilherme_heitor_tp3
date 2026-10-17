@@ -27,7 +27,12 @@ class PredictionRequest(SQLModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    texto: str = Field(min_length=1, max_length=5000)
+    texto: str = Field(
+        min_length=1,
+        max_length=5000,
+        description="Texto da mensagem do cliente, entre 1 e 5000 caracteres.",
+        schema_extra={"examples": ["Meu produto parou de funcionar depois da última atualização."]},
+    )
 
 
 class PredictionResponse(SQLModel):

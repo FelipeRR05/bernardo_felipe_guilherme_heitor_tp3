@@ -4,7 +4,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
-from config import CSP_DA_API, CSP_DA_DOCUMENTACAO, ROTAS_DA_DOCUMENTACAO
+from config import CSP_DA_API
 
 
 class CabecalhosDeSeguranca(BaseHTTPMiddleware):
@@ -13,10 +13,11 @@ class CabecalhosDeSeguranca(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next) -> Response:
         resposta: Response = await call_next(request)
 
-       
-        if request.url.path.startswith(ROTAS_DA_DOCUMENTACAO):
-            resposta.headers["Content-Security-Policy"] = CSP_DA_DOCUMENTACAO
-        else:
+        # Correção TP3 (ZAP - CSP: script-src/style-src unsafe-inline): o middleware
+        # não libera mais uma CSP permissiva para /docs e /redoc. A rota /docs
+        # (routes/docs.py) já manda a própria CSP, sem 'unsafe-inline', e todas as
+        # outras respostas recebem a CSP estrita da API.
+        if "content-security-policy" not in resposta.headers:
             resposta.headers["Content-Security-Policy"] = CSP_DA_API
 
        

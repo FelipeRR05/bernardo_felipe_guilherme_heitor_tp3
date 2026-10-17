@@ -1,10 +1,13 @@
 # Análise dos findings - scan passivo OWASP ZAP
 
+> Este é o scan do TP2. No TP3 os dois findings Medium aceitos aqui foram corrigidos. A análise
+> nova está em `scan_passivo_zap_TP3.md`.
+
 Ferramenta: OWASP ZAP 2.16.1 em modo daemon.
 Scan: passivo, com as 57 regras ativas e sensibilidade máxima.
 Alvo: API local em 127.0.0.1:8000.
 Requisições: 17, incluindo rotas públicas, autenticadas, sem token, acesso indevido e validações.
-Relatórios: relatorio_zap.html e relatorio_zap.json. |
+Relatórios: relatorio_zap.html e relatorio_zap.json.
 
 ## Resultado consolidado
 
