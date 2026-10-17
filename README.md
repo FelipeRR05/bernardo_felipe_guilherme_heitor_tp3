@@ -3,7 +3,9 @@
 [![Testes de segurança](https://github.com/FelipeRR05/bernardo_felipe_guilherme_heitor_tp3/actions/workflows/testes.yml/badge.svg)](https://github.com/FelipeRR05/bernardo_felipe_guilherme_heitor_tp3/actions/workflows/testes.yml)
 
 **Disciplina:** Projeto de Bloco: Análise e Segurança de Agentes de IA - Instituto Infnet
+
 **Professor:** Tiago Cariolano de Souza Xavier
+
 **Grupo:** Bernardo de Moraes Eleuterio, Felipe Roberto Rocha, Guilherme Valentim Ramalho da Silva e Heitor Cella Oliveira
 
 ---
@@ -101,7 +103,7 @@ git clone https://github.com/FelipeRR05/bernardo_felipe_guilherme_heitor_tp3.git
 cd bernardo_felipe_guilherme_heitor_tp3
 
 # 2. Criar e ativar o ambiente virtual
-python3 -m venv .venv
+python -m venv .venv
 source .venv/bin/activate      # Linux / macOS
 # .venv\Scripts\activate       # Windows
 

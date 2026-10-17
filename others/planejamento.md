@@ -74,13 +74,13 @@ expressões como "cancel subscription".
 
 ## 3. Alvo autorizado para o teste adversarial (TP4/TP5)
 
-A nossa API vai ficar exposta na internet pelo **Cloudflare Tunnel**, e esta é a URL autorizada
+A nossa API vai ficar exposta na internet pelo Cloudflare Tunnel, e esta é a URL autorizada
 para o pentest:
 
 | Item | Valor |
 |---|---|
-| URL da API (Cloudflare Tunnel) | **[PREENCHER: https://....trycloudflare.com]** |
-| Documentação interativa | `<URL da API>/docs` |
+| URL da API | https://jesse-sand-says-adjusted.trycloudflare.com |
+| Documentação interativa | https://jesse-sand-says-adjusted.trycloudflare.com/docs |
 | Usuários de teste | `admin` / `admin123` e `analista` / `analista123` |
 | Escopo autorizado | Somente a API nessa URL |
 
